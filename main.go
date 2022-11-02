@@ -18,10 +18,10 @@ func rewriteCfg(cfg *ssh_config.Config, targetPtn string, inputHostName string) 
     for _, host := range cfg.Hosts {
         // fmt.Println("patterns:", i, host.Patterns, host.Matches(targetPtn))
 
-        // ホスト名マッチング
+       // Match HostName
         isContainedWildCard := false
         if host.Matches(targetPtn) {
-            // ワイルドカードが入っている場合は除外
+            // A wildCard is not supported
             for _, pattern := range host.Patterns {
                 if strings.Contains(pattern.String(), "*") {
                     isContainedWildCard = true
@@ -35,20 +35,19 @@ func rewriteCfg(cfg *ssh_config.Config, targetPtn string, inputHostName string) 
 
                 kv, ok := node.(*ssh_config.KV)
 
-                // HostNameディレクティブが存在していた場合、値を修正
                 if ok && kv.Key == "HostName" {
                     previousHostName := kv.Value
                     kv.Value = inputHostName
                     //kv.Comment = "This value was rewritten automatically"
-                    fmt.Printf("Hostname rewrited: %s -> %s\n", previousHostName, kv.Value)
+					fmt.Printf("Hostname rewrited: %s -> %s (ln: %d)\n",
+						previousHostName, kv.Value, kv.Pos().Line)
 
-                    // 書き換え完了
                     rewrited = true
                     break
                 }
             }
 
-            // 全てのノードを確認してもHostNameが存在しない場合、新たにノードを書き加える
+            // Add new Host-Pattern if config has no targetd hostname 
             if !rewrited {
                 fmt.Println("adding Node...")
                 newNode := &ssh_config.KV{
@@ -76,7 +75,8 @@ func main() {
     targetPtn := *targetPtnPtr
     inputHostName := *inputHostNamePtr
 
-    fmt.Println("Target hostname:", targetPtn)
+	fmt.Println("======== Auto SSH-Config Editor ========")
+	fmt.Println("Targeted HostName:", targetPtn)
 
     // define config path
     var confPath string
