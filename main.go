@@ -11,6 +11,8 @@ import (
     "io"
 )
 
+var version string
+
 func rewriteCfg(cfg *ssh_config.Config, targetPtn string, inputHostName string) (bool, error) {
 
     // try to rewrite config
@@ -75,7 +77,7 @@ func main() {
     targetPtn := *targetPtnPtr
     inputHostName := *inputHostNamePtr
 
-	fmt.Println("======== Auto SSH-Config Editor ========")
+	fmt.Printf("======== Auto SSH-Config Editor %s ========\n", version)
 	fmt.Println("Targeted HostName:", targetPtn)
 
     // define config path
